@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#Author D Simpson 2021
+#Author D Simpson 2021-2022
 #Script takes multiple args and uses an array to check... if any single service fails a check the overall checks stop - so you must fix that service
 
 # Reference Define Nagios return codes
@@ -10,6 +10,9 @@ STATE_WARNING=1
 STATE_CRITICAL=2
 STATE_UNKNOWN=3
 
+#excludes that don't have unit file
+EXCLUDE="exclude-service1"
+EXCLUDE2="exclude-service2"
 
 #check args
 if [[ $# -lt 1 ]]; then
@@ -17,7 +20,22 @@ if [[ $# -lt 1 ]]; then
     exit $STATE_UNKNOWN
 fi
 
+
+#array supplied
 array=( "$@" )
+
+
+#deal with any excludes (that don't have unit file)
+new_array=()
+for value in "${array[@]}"
+do
+    [[ $value != ${EXCLUDE} && $value != ${EXCLUDE2} ]] && new_array+=($value)
+done
+#re-assign
+array=("${new_array[@]}")
+unset new_array
+
+#get the length here as it might of changed
 arraylength=${#array[@]}
 
 #firstly, check services exist
